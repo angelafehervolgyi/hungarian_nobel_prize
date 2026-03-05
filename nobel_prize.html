@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magyar Nobel-díjasok - Párosítás Feladat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a237e 0%, #283593 25%, #3f51b5 50%, #5c6bc0 75%, #7986cb 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding: 30px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Tudományos háttér-pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+                linear-gradient(45deg, rgba(255, 255, 255, 0.02) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.02) 75%),
+                linear-gradient(-45deg, rgba(255, 255, 255, 0.02) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.02) 75%);
+            background-size: 500px 500px, 700px 700px, 50px 50px, 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Animált molekulák / Animated molecules */
+        .molecule {
+            position: fixed;
+            font-size: 2em;
+            opacity: 0.1;
+            animation: float 20s infinite ease-in-out;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .molecule:nth-child(1) { top: 10%; left: 5%; animation-delay: 0s; }
+        .molecule:nth-child(2) { top: 20%; right: 10%; animation-delay: 2s; }
+        .molecule:nth-child(3) { top: 60%; left: 10%; animation-delay: 4s; }
+        .molecule:nth-child(4) { top: 80%; right: 5%; animation-delay: 6s; }
+        .molecule:nth-child(5) { top: 40%; right: 20%; animation-delay: 8s; }
+        .molecule:nth-child(6) { top: 70%; left: 20%; animation-delay: 10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(180deg); }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 50px;
+            position: relative;
+            z-index: 2;
+            border: 2px solid rgba(63, 81, 181, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 3px solid #3f51b5;
+        }
+
+        h1 {
+            color: #1a237e;
+            margin-bottom: 10px;
+            font-size: 2.8em;
+            background: linear-gradient(135deg, #1a237e 0%, #3f51b5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #555;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .page-info {
+            color: #888;
+            font-size: 0.95em;
+            font-style: italic;
+        }
+
+        .instructions {
+            background: linear-gradient(135deg, rgba(63, 81, 181, 0.1) 0%, rgba(92, 107, 192, 0.1) 100%);
+            border-left: 5px solid #3f51b5;
+            padding: 20px 25px;
+            margin-bottom: 40px;
+            border-radius: 10px;
+            color: #333;
+            font-size: 1.05em;
+            line-height: 1.6;
+        }
+
+        .instructions strong {
+            color: #1a237e;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            margin-bottom: 40px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .column-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #1a237e;
+            margin-bottom: 20px;
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(63, 81, 181, 0.1) 0%, rgba(92, 107, 192, 0.1) 100%);
+            border-radius: 10px;
+            border-bottom: 3px solid #3f51b5;
+        }
+
+        .item {
+            padding: 18px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #e0e0e0;
+            user-select: none;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .winner {
+            background: linear-gradient(135deg, #f5f7ff 0%, #eff2ff 100%);
+            color: #1a237e;
+            border: 2px solid #c5cae9;
+        }
+
+        .winner:hover:not(.locked) {
+            background: linear-gradient(135deg, #e0e7ff 0%, #d5e0ff 100%);
+            border-color: #3f51b5;
+            transform: translateX(8px);
+            box-shadow: 0 5px 15px rgba(63, 81, 181, 0.3);
+        }
+
+        .winner.selected {
+            background: linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%);
+            color: white;
+            border-color: #1a237e;
+            box-shadow: 0 8px 20px rgba(63, 81, 181, 0.5);
+            transform: scale(1.02);
+        }
+
+        .winner.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: linear-gradient(135deg, #f5f5f5 0%, #efefef 100%);
+            border-color: #bdbdbd;
+        }
+
+        .invention {
+            background: linear-gradient(135deg, #fff8f5 0%, #fff3eb 100%);
+            color: #1a237e;
+            border: 2px solid #ffe0b2;
+        }
+
+        .invention:hover:not(.locked) {
+            background: linear-gradient(135deg, #ffe8d6 0%, #ffd8b8 100%);
+            border-color: #ff9800;
+            transform: translateX(-8px);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .invention.selected {
+            background: linear-gradient(135deg, #ff9800 0%, #ffb74d 100%);
+            color: white;
+            border-color: #e65100;
+            box-shadow: 0 8px 20px rgba(255, 152, 0, 0.5);
+            transform: scale(1.02);
+        }
+
+        .invention.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: linear-gradient(135deg, #f5f5f5 0%, #efefef 100%);
+            border-color: #bdbdbd;
+        }
+
+        .invention.matched {
+            background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
+            color: white;
+            border-color: #4caf50;
+            cursor: not-allowed;
+        }
+
+        .invention.matched:hover {
+            transform: none;
+        }
+
+        .item-feedback {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5em;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .invention.matched .item-feedback {
+            opacity: 1;
+            animation: popIn 0.5s ease;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: translateY(-50%) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translateY(-50%) scale(1.2);
+            }
+            100% {
+                transform: translateY(-50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .match-info {
+            font-size: 0.8em;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 6px;
+            text-align: center;
+            min-height: 20px;
+            line-height: 1.4;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 14px 40px;
+            font-size: 1.05em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-check {
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            color: white;
+        }
+
+        .btn-check:hover:not(:disabled) {
+            background: linear-gradient(135deg, #45a049 0%, #5cb85c 100%);
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-check:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+            color: #333;
+        }
+
+        .btn-reset:hover {
+            background: linear-gradient(135deg, #ffb300 0%, #ffa000 100%);
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #2196f3 0%, #42a5f5 100%);
+            color: white;
+        }
+
+        .btn-next:hover {
+            background: linear-gradient(135deg, #1e88e5 0%, #1976d2 100%);
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        .results {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(165, 214, 167, 0.1) 100%);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            display: none;
+            border: 2px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .results-title {
+            font-size: 2em;
+            color: #1a237e;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .score {
+            font-size: 3em;
+            color: #4caf50;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .score-label {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .result-details {
+            text-align: left;
+            margin-top: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .result-item {
+            background: white;
+            padding: 15px 18px;
+            border-radius: 10px;
+            border-left: 5px solid #ddd;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .result-item.correct {
+            border-left-color: #4caf50;
+            background: linear-gradient(135deg, #f1fce4 0%, #e8f5e9 100%);
+        }
+
+        .result-item.incorrect {
+            border-left-color: #f44336;
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+        }
+
+        .result-icon {
+            font-size: 1.8em;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .result-content {
+            flex: 1;
+        }
+
+        .result-item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #1a237e;
+        }
+
+        .result-item-answer {
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .result-item-correct-answer {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .pages-navigation {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            width: 50px;
+            height: 50px;
+            padding: 0;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            background: #e8eaf6;
+            border: 2px solid #3f51b5;
+            color: #3f51b5;
+        }
+
+        .page-btn:hover {
+            background: #3f51b5;
+            color: white;
+        }
+
+        .page-btn.active {
+            background: #3f51b5;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                padding: 30px;
+            }
+
+            h1 {
+                font-size: 2.2em;
+            }
+
+            .game-board {
+                gap: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .game-board {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .item {
+                padding: 15px;
+                font-size: 0.95em;
+            }
+
+            button {
+                padding: 12px 25px;
+                font-size: 0.95em;
+            }
+
+            .molecule {
+                font-size: 1.5em;
+            }
+        }
+
+        .pagination-info {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animált molekulák háttérben / Animated molecules in background -->
+    <div class="molecule">⚛️</div>
+    <div class="molecule">🧬</div>
+    <div class="molecule">🔬</div>
+    <div class="molecule">⚗️</div>
+    <div class="molecule">🧪</div>
+    <div class="molecule">💡</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🏆 Magyar Nobel-díjasok</h1>
+            <p class="subtitle">Hungarian Nobel Prize Winners - Matching Game</p>
+            <p class="page-info" id="pageInfo"></p>
+        </div>
+
+        <div class="instructions">
+            <strong>📋 Utasítások / Instructions:</strong><br>
+            Kattints a bal oldalon egy Nobel-díjasra, majd kattints a jobb oldalon a hozzá tartozó találmányra! 
+            Helyes válasz esetén zöld ✓ ikon, rossz válasz esetén piros ✗ ikon jelenik meg.
+            / Click on a Nobel Prize winner on the left, then click on their corresponding invention on the right!
+            Green ✓ for correct, red ✗ for incorrect.
+        </div>
+
+        <div class="game-board">
+            <div class="column">
+                <div class="column-title">🎓 Nobel-díjasok</div>
+                <div id="winners"></div>
+            </div>
+            <div class="column">
+                <div class="column-title">💡 Találmányok</div>
+                <div id="inventions"></div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-check" id="checkBtn" onclick="checkAnswers()">✓ Ellenőrzés / Check</button>
+            <button class="btn-reset" id="resetBtn" onclick="resetGame()">↻ Újra / Reset</button>
+            <button class="btn-next" id="nextBtn" onclick="nextPage()" style="display: none;">Következő / Next ➜</button>
+        </div>
+
+        <div class="results" id="results">
+            <div class="results-title">📊 Eredmények / Results</div>
+            <div class="score" id="scoreDisplay"></div>
+            <div class="score-label" id="scoreLabel"></div>
+            <div class="result-details" id="resultDetails"></div>
+        </div>
+
+        <div class="pagination-info" id="paginationInfo"></div>
+        
+        <div class="pages-navigation" id="pagesNavigation"></div>
+    </div>
+
+    <script>
+        // Teljes adatok / Complete data
+        const allNobelWinners = [
+            // 1. oldal / Page 1
+            {
+                id: 1,
+                name: "Hevesy György",
+                year: 1943,
+                category: "Kémia / Chemistry",
+                page: 1
+            },
+            {
+                id: 2,
+                name: "Békésy György",
+                year: 1961,
+                category: "Fiziológia/Orvostudomány / Physiology/Medicine",
+                page: 1
+            },
+            {
+                id: 3,
+                name: "Wigner Jen",
+                year: 1963,
+                category: "Fizika / Physics",
+                page: 1
+            },
+            {
+                id: 4,
+                name: "Gábor Dénes",
+                year: 1971,
+                category: "Fizika / Physics",
+                page: 1
+            },
+            {
+                id: 5,
+                name: "Polanyi John Charles",
+                year: 1986,
+                category: "Kémia / Chemistry",
+                page: 1
+            },
+            // 2. oldal / Page 2
+            {
+                id: 6,
+                name: "Oláh György",
+                year: 1994,
+                category: "Kémia / Chemistry",
+                page: 2
+            },
+            {
+                id: 7,
+                name: "Molnár Ferencz",
+                year: 2001,
+                category: "Orvostudomány / Physiology/Medicine",
+                page: 2
+            },
+            {
+                id: 8,
+                name: "Erdős Pál",
+                year: 0,
+                category: "Matematika / Mathematics",
+                page: 2
+            },
+            {
+                id: 9,
+                name: "Szilárd Leó",
+                year: 0,
+                category: "Fizika / Physics",
+                page: 2
+            },
+            {
+                id: 10,
+                name: "Teller Ede",
+                year: 0,
+                category: "Fizika / Physics",
+                page: 2
+            }
+        ];
+
+        const allInventions = [
+            // 1. oldal / Page 1
+            {
+                id: "A",
+                name: "Holográfia / Holography",
+                correctWinner: 4,
+                page: 1
+            },
+            {
+                id: "B",
+                name: "A hallás mechanizmusának kutatása / Research on hearing mechanism",
+                correctWinner: 2,
+                page: 1
+            },
+            {
+                id: "C",
+                name: "Radioaktív izotópok nyomjelzésként való alkalmazása / Radioactive isotopes as tracers",
+                correctWinner: 1,
+                page: 1
+            },
+            {
+                id: "D",
+                name: "Atommag szerkezetének kutatása / Nuclear shell structure",
+                correctWinner: 3,
+                page: 1
+            },
+            {
+                id: "E",
+                name: "Kémiai reakciók spektroszkópiás vizsgálata / Spectroscopic study of chemical reactions",
+                correctWinner: 5,
+                page: 1
+            },
+            // 2. oldal / Page 2
+            {
+                id: "A",
+                name: "Stabil szénhidrogén ionok kutatása / Stable hydrocarbon ions research",
+                correctWinner: 6,
+                page: 2
+            },
+            {
+                id: "B",
+                name: "Génmásoláson alapuló kutatások / Gene cloning research",
+                correctWinner: 7,
+                page: 2
+            },
+            {
+                id: "C",
+                name: "Kombinatorika és számelmélet / Combinatorics and number theory",
+                correctWinner: 8,
+                page: 2
+            },
+            {
+                id: "D",
+                name: "Az atombomba kifejlesztésében való közreműködés / Contribution to atomic bomb development",
+                correctWinner: 9,
+                page: 2
+            },
+            {
+                id: "E",
+                name: "A hidrogénbomba kifejlesztésében való közreműködés / Contribution to hydrogen bomb development",
+                correctWinner: 10,
+                page: 2
+            }
+        ];
+
+        // Globális változók / Global variables
+        let currentPage = 1;
+        let selectedWinner = null;
+        let userMatches = {};
+        let matchedInventions = new Set();
+        let pageResults = {};
+
+        // Initialize game / Játék inicializálása
+        function initGame() {
+            const nobelWinners = allNobelWinners.filter(w => w.page === currentPage);
+            const inventions = allInventions.filter(i => i.page === currentPage);
+            
+            updatePageInfo();
+            renderWinners(nobelWinners);
+            renderInventions(inventions);
+            updatePaginationInfo();
+        }
+
+        function updatePageInfo() {
+            document.getElementById('pageInfo').textContent = `Oldal / Page ${currentPage} / 2`;
+        }
+
+        function updatePaginationInfo() {
+            const info = `${currentPage}. oldal - 5/5 Nobel-díjas - Page ${currentPage} - 5/5 Nobel Prize winners`;
+            document.getElementById('paginationInfo').textContent = info;
+        }
+
+        // Render winners / Nobel-díjasok megjelenítése
+        function renderWinners(nobelWinners) {
+            const winnersContainer = document.getElementById('winners');
+            winnersContainer.innerHTML = '';
+
+            nobelWinners.forEach(winner => {
+                const element = document.createElement('div');
+                element.className = 'item winner';
+                element.id = `winner-${winner.id}`;
+                
+                const yearText = winner.year > 0 ? `(${winner.year})` : '(várományzott/Nominated)';
+                
+                element.innerHTML = `
+                    <strong>${winner.name}</strong>
+                    <div style="font-size: 0.8em; color: inherit; margin-top: 4px; opacity: 0.8;">
+                        ${yearText} - ${winner.category}
+                    </div>
+                    <div class="match-info" id="match-${winner.id}"></div>
+                `;
+                element.onclick = () => selectWinner(winner.id);
+                winnersContainer.appendChild(element);
+            });
+        }
+
+        // Render inventions / Találmányok megjelenítése
+        function renderInventions(inventions) {
+            const inventionsContainer = document.getElementById('inventions');
+            inventionsContainer.innerHTML = '';
+
+            inventions.forEach(invention => {
+                const element = document.createElement('div');
+                element.className = 'item invention';
+                element.id = `invention-${invention.id}`;
+                element.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="flex: 1;">
+                            <strong>${invention.id}.</strong> ${invention.name}
+                            <div class="match-info" id="match-inv-${invention.id}"></div>
+                        </div>
+                        <div class="item-feedback"></div>
+                    </div>
+                `;
+                element.onclick = () => selectInvention(invention.id);
+                inventionsContainer.appendChild(element);
+            });
+        }
+
+        // Select winner / Nobel-díjas kiválasztása
+        function selectWinner(winnerId) {
+            const nobelWinners = allNobelWinners.filter(w => w.page === currentPage);
+            const winner = nobelWinners.find(w => w.id === winnerId);
+            
+            if (!winner) return;
+
+            // Ellenőrizd, hogy már párosított-e
+            const invention = allInventions.find(inv => userMatches[winnerId] === inv.id);
+            if (invention) {
+                // Már párosított, szüntesd meg
+                delete userMatches[winnerId];
+                selectedWinner = null;
+            } else if (selectedWinner === winnerId) {
+                selectedWinner = null;
+            } else {
+                selectedWinner = winnerId;
+            }
+            
+            updateSelection();
+        }
+
+        // Select invention / Találmány kiválasztása
+        function selectInvention(inventionId) {
+            const nobelWinners = allNobelWinners.filter(w => w.page === currentPage);
+            const inventions = allInventions.filter(i => i.page === currentPage);
+            
+            if (selectedWinner === null) {
+                alert('Először válassz egy Nobel-díjast! / First select a Nobel Prize winner!');
+                return;
+            }
+
+            const invention = inventions.find(inv => inv.id === inventionId);
+            
+            // Ellenőrizd, hogy a találmány már párosított-e más Nobel-díjassal
+            for (let winnerId in userMatches) {
+                if (userMatches[winnerId] === inventionId && winnerId != selectedWinner) {
+                    alert('Ez a találmány már párosítva van! / This invention is already matched!');
+                    return;
+                }
+            }
+
+            userMatches[selectedWinner] = inventionId;
+            selectedWinner = null;
+            updateSelection();
+            updateMatchInfo();
+        }
+
+        // Update selection visual / Kiválasztás vizuális frissítése
+        function updateSelection() {
+            const nobelWinners = allNobelWinners.filter(w => w.page === currentPage);
+            
+            nobelWinners.forEach(winner => {
+                const element = document.getElementById(`winner-${winner.id}`);
+                if (winner.id === selectedWinner) {
+                    element.classList.add('selected');
+                } else {
+                    element.classList.remove('selected');
+                }
+            });
+        }
+
+        // Update match info / Párosítási információ frissítése
+        function updateMatchInfo() {
+            const nobelWinners = allNobelWinners.filter(w => w.page === currentPage);
+            const inventions = allInventions.filter(i => i.page === currentPage);
+            
+            // Clear all match info
+            nobelWinners.forEach(winner => {
+                document.getElementById(`match-${winner.id}`).textContent = '';
+            });
+            inventions.forEach(invention => {
+                document.getElementById(`match-inv-${invention.id}`).textContent = '';
+            });
+
+            // Update match info for matched items
+            Object.entries(userMatches).forEach(([winnerId, inventionId]) => {
+                const winner = nobelWinners.find(w => w.id == winnerId);
+                const invention = inventions.find(i => i.id === inventionId);
+                
+                if (winner && invention) {
+                    document.getElementById(`match-${winnerId}`).textContent = 
+                        `✓ ${inventionId}. ${invention.name}`;
+                    document.getElementById(`match-inv-${inventionId}`).textContent = 
+                        `✓ Párosítva: ${winner.name}`;
+                }
+            });
+
+            // Update matched invention styles
+            inventions.forEach(invention => {
+                const element = document.getElementById(`invention-${invention.id}`);
+                let isMatched = false;
+                
+                for (let winnerId in userMatches) {
+                    if (userMatches[winnerId] === invention.id) {
+                        isMatched = true;
+                        break;
+                    }
+                }
+                
+                if (isMatched) {
+                    element.classList.add('matched');
+                    element.classList.remove('selected');
+                } else {
+                    element.classList.remove('matched', 'selected');
+                }
+            });
+        }
+
+        // Check answers / Válaszok ellenőrzése
+        function checkAnswers() {
+            const nobelWinners = allNobelWinners.filter(w => w.page === currentPage);
+            
+            if (Object.keys(userMatches).length !== nobelWinners.length) {
+                alert('Kérjük, párosítsd az összes Nobel-díjast! / Please match all Nobel Prize winners!');
+                return;
+            }
+
+            let correct = 0;
+            const results = [];
+
+            nobelWinners.forEach(winner => {
+                const userAnswer = userMatches[winner.id];
+                const invention = allInventions.find(inv => inv.id === userAnswer && inv.page === currentPage);
+                const isCorrect = invention && invention.correctWinner === winner.id;
+
+                if (isCorrect) {
+                    correct++;
+                    // Zöld pipa megjelenítése / Show green checkmark
+                    const inventionElement = document.getElementById(`invention-${userAnswer}`);
+                    if (inventionElement) {
+                        const feedback = inventionElement.querySelector('.item-feedback');
+                        if (feedback) {
+                            feedback.textContent = '✓';
+                            feedback.style.color = '#4caf50';
+                            feedback.style.fontSize = '2em';
+                        }
+                    }
+                } else {
+                    // Piros X megjelenítése / Show red X
+                    const inventionElement = document.getElementById(`invention-${userAnswer}`);
+                    if (inventionElement) {
+                        const feedback = inventionElement.querySelector('.item-feedback');
+                        if (feedback) {
+                            feedback.textContent = '✗';
+                            feedback.style.color = '#f44336';
+                            feedback.style.fontSize = '2em';
+                        }
+                    }
+                }
+
+                results.push({
+                    name: winner.name,
+                    userAnswer: `${userAnswer}. ${invention ? invention.name : 'Nincs válasz / No answer'}`,
+                    correctAnswer: allInventions.find(inv => inv.correctWinner === winner.id && inv.page === currentPage),
+                    correct: isCorrect
+                });
+            });
+
+            // Mentsd az eredményeket erre az oldalra
+            pageResults[currentPage] = { correct, total: nobelWinners.length, results };
+
+            displayResults(correct, results);
+        }
+
+        // Display results / Eredmények megjelenítése
+        function displayResults(correct, results) {
+            const resultsDiv = document.getElementById('results');
+            const total = allNobelWinners.filter(w => w.page === currentPage).length;
+            const percentage = Math.round((correct / total) * 100);
+
+            document.getElementById('scoreDisplay').innerHTML = `${correct}/${total}`;
+            document.getElementById('scoreLabel').innerHTML = 
+                `${percentage}% Helyes / Correct - ${correct === total ? '🌟 Tökéletes! / Perfect!' : ''}`;
+
+            let detailsHTML = '';
+            results.forEach(result => {
+                const statusClass = result.correct ? 'correct' : 'incorrect';
+                const statusIcon = result.correct ? '✓' : '✗';
+                detailsHTML += `
+                    <div class="result-item ${statusClass}">
+                        <div class="result-icon">${statusIcon}</div>
+                        <div class="result-content">
+                            <div class="result-item-name">${result.name}</div>
+                            <div class="result-item-answer">
+                                Válaszod / Your answer: <strong>${result.userAnswer}</strong>
+                            </div>
+                            ${!result.correct && result.correctAnswer ? `
+                                <div class="result-item-correct-answer">
+                                    Helyes válasz / Correct answer: <strong>${result.correctAnswer.id}. ${result.correctAnswer.name}</strong>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('resultDetails').innerHTML = detailsHTML;
+            resultsDiv.classList.add('show');
+
+            // Disable check button, show next button / Tiltsd le az ellenőrzés gombját, mutasd a Következő gombát
+            document.getElementById('checkBtn').disabled = true;
+            if (currentPage < 2) {
+                document.getElementById('nextBtn').style.display = 'inline-block';
+            }
+        }
+
+        // Next page / Következő oldal
+        function nextPage() {
+            if (currentPage < 2) {
+                currentPage++;
+                resetGameState();
+                initGame();
+                renderPageNavigation();
+            }
+        }
+
+        // Reset game / Játék zurückállítása
+        function resetGame() {
+            resetGameState();
+            initGame();
+        }
+
+        function resetGameState() {
+            selectedWinner = null;
+            userMatches = {};
+            matchedInventions = new Set();
+            document.getElementById('results').classList.remove('show');
+            document.getElementById('checkBtn').disabled = false;
+            document.getElementById('nextBtn').style.display = 'none';
+        }
+
+        // Render page navigation / Oldalnavigáció megjelenítése
+        function renderPageNavigation() {
+            const nav = document.getElementById('pagesNavigation');
+            nav.innerHTML = '';
+            
+            for (let i = 1; i <= 2; i++) {
+                const btn = document.createElement('button');
+                btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                btn.textContent = i;
+                btn.onclick = () => goToPage(i);
+                nav.appendChild(btn);
+            }
+        }
+
+        function goToPage(pageNum) {
+            if (pageNum !== currentPage) {
+                currentPage = pageNum;
+                resetGameState();
+                initGame();
+                renderPageNavigation();
+            }
+        }
+
+        // Start game / Játék indítása
+        window.addEventListener('DOMContentLoaded', () => {
+            initGame();
+            renderPageNavigation();
+        });
+    </script>
+</body>
+</html>
